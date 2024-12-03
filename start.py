@@ -211,3 +211,101 @@ highLabe.place(x=5, y=30)
 lenghtText.place(x=75, y=55)
 lenghtLabe.place(x=5, y=55)
 settings.mainloop()
+"""
+import sys
+from PyQt5.QtWidgets import QApplication, QMainWindow, QListWidget, QTextEdit, QVBoxLayout, QWidget, QPushButton, QMessageBox, QMenuBar
+
+class NoteApp(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Приложение для Заметок")
+        self.setGeometry(100, 100, 600, 400)
+
+        self.notes = []
+        self.current_note_index = -1
+
+        self.initUI()
+
+    def initUI(self):
+        self.central_widget = QWidget()
+        self.setCentralWidget(self.central_widget)
+
+        self.layout = QVBoxLayout(self.central_widget)
+
+        self.note_list = QListWidget()
+        self.note_list.clicked.connect(self.load_note)
+
+        self.note_edit = QTextEdit()
+
+        self.add_note_button = QPushButton("Добавить Заметку")
+        self.add_note_button.clicked.connect(self.add_note)
+
+        self.delete_note_button = QPushButton("Удалить Заметку")
+        self.delete_note_button.clicked.connect(self.delete_note)
+
+        self.layout.addWidget(self.note_list)
+        self.layout.addWidget(self.note_edit)
+        self.layout.addWidget(self.add_note_button)
+        self.layout.addWidget(self.delete_note_button)
+
+        self.setMenuBar(self.create_menu())
+
+    def create_menu(self):
+        menu_bar = QMenuBar(self)
+        file_menu = menu_bar.addMenu("Файл")
+
+        save_action = file_menu.addAction("Сохранить")
+        save_action.triggered.connect(self.save_notes)
+
+        load_action = file_menu.addAction("Загрузить")
+        load_action.triggered.connect(self.load_notes)
+
+        return menu_bar
+
+    def add_note(self):
+        note_text = self.note_edit.toPlainText()
+        if note_text:
+            self.notes.append(note_text)
+            self.note_list.addItem(note_text)
+            self.note_edit.clear()
+            self.current_note_index = len(self.notes) - 1
+
+    def delete_note(self):
+        if self.current_note_index >= 0:
+            del self.notes[self.current_note_index]
+            self.note_list.takeItem(self.current_note_index)
+            self.note_edit.clear()
+            self.current_note_index = -1
+
+    def load_note(self):
+        self.current_note_index = self.note_list.currentRow()
+        if self.current_note_index >= 0:
+            note_text = self.notes[self.current_note_index]
+            self.note_edit.setPlainText(note_text)
+
+    def save_notes(self):
+        with open("notes.txt", "w") as f:
+            for note in self.notes:
+                f.write(note + "\n")
+
+    def load_notes(self):
+        try:
+            with open("notes.txt", "r") as f:
+                self.notes = f.read().splitlines()
+                self.note_list.clear()
+                for note in self.notes:
+                    self.note_list.addItem(note)
+                if self.notes:
+                    self.current_note_index = 0
+                    self.load_note()
+                else:
+                    self.current_note_index = -1
+        except FileNotFoundError:
+            QMessageBox.warning(self, "Ошибка", "Файл с заметками не найден.")
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    window = NoteApp()
+    window.show()
+    sys.exit(app.exec_())
+"""
